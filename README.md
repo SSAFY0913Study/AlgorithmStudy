@@ -1,4 +1,4 @@
-# Algorithm Study
+# Algorithm Study🐳 
 
 SSAFY 9기 13반 알고리즘 스터디
 
