@@ -5,7 +5,7 @@ SSAFY 9기 13반 알고리즘 스터디
 ### 진행 방식
 
 1. 매 주 목요일 오프라인 
-2. 주차별 폴더 / 문제 폴더 / Main_이름.java
+2. 파일 업로드 경로 : N주차 /  문제번호문제이름  / Main이름.java
 
 ### 스터디원
 - [전임송](https://github.com/imsongj/SSAFYAlgorithmStudy)
