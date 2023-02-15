@@ -11,17 +11,17 @@ int dx[4] = { -1,0,0,1 };
 int dy[4] = { 0,-1,1,0 };
 int sumLike[5] = { 0,1,10,100,1000 };
 
-int isValid(int x, int y, int i) { //(x,y)À§Ä¡¿¡¼­ i¹æÇâÀÌ °æ°è°ªÀ» ¹ş¾î³ª´ÂÁö
+int isValid(int x, int y, int i) { //(x,y)ìœ„ì¹˜ì—ì„œ ië°©í–¥ì´ ê²½ê³„ê°’ì„ ë²—ì–´ë‚˜ëŠ”ì§€
 	if (x + dx[i] < 0 || n - 1 < x + dx[i] || y + dy[i] < 0 || n - 1 < y + dy[i])return 0;
 	return 1;
 }
-int returnLike(int x, int y, int d) { //(x,y)À§Ä¡¿¡¼­ d¹æÇâ¿¡ ÁÁ¾ÆÇÏ´Â ÇĞ»ıÀÌ ÀÖ´ÂÁö
+int returnLike(int x, int y, int d) { //(x,y)ìœ„ì¹˜ì—ì„œ dë°©í–¥ì— ì¢‹ì•„í•˜ëŠ” í•™ìƒì´ ìˆëŠ”ì§€
 	for (int i = 1; i <= 4; i++) {
 		if (map[x + dx[d]][y + dy[d]] == v[cnt][i]) return 1;
 	}
 	return 0;
 }
-void input() {
+void input() { //ì…ë ¥ë°›ê¸°
 	cin >> n;
 	v.resize(n*n);
 	map.resize(n);
@@ -37,12 +37,12 @@ void input() {
 	}
 	for (int i = 0; i < n; i++) like[i].resize(n);
 }
-int searchMaxLike() { //ÃÖ´ë ÁÁ¾Æ¿ä ¼ö ±¸ÇÏ±â
+int searchMaxLike() { //ìµœëŒ€ ì„ í˜¸ë„ ìˆ˜ êµ¬í•˜ê¸°
 	int maxLike = 0;
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
-			if (map[i][j])continue;
-			for (int k = 0; k < 4; k++) {
+			if (map[i][j])continue; //ì´ë¯¸ ë°°ì¹˜ëœ ìë¦¬ë¼ë©´ íŒ¨ìŠ¤
+			for (int k = 0; k < 4; k++) { //4ë°©í–¥ íƒìƒ‰í•˜ë©° ì„ í˜¸ë„, ê³µë°± ì²´í¬
 				if (isValid(i, j, k)) {
 					if(map[i+dx[k]][j+dy[k]])	like[i][j].first += returnLike(i, j, k);
 					else like[i][j].second ++;
@@ -56,31 +56,31 @@ int searchMaxLike() { //ÃÖ´ë ÁÁ¾Æ¿ä ¼ö ±¸ÇÏ±â
 void insertStudent(int maxLike, int maxBlank) {
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
-			if (!map[i][j]&&like[i][j].first == maxLike && like[i][j].second == maxBlank) {
+			if (!map[i][j]&&like[i][j].first == maxLike && like[i][j].second == maxBlank) { //mapì— ì•„ì§ ì±„ì›Œì§€ì§€ ì•Šì€ ìë¦¬ì¤‘ ì„ í˜¸ë„ì™€ ì£¼ë³€ ë¹ˆì¹¸ì´ ê°€ì¥ ë§ì€ ìë¦¬
 				map[i][j] = v[cnt][0];
 				return;
 			}
 		}
 	}
 }
-int searchMaxBlank(int maxLike){ //¼±È£µµ°¡ ÃÖ°íÀÎ °÷µé Áß¿¡¼­ 4¹æÇâ Å½»öÇÏ¸ç maxBlank ±¸ÇÏ±â
+int searchMaxBlank(int maxLike){ //ì„ í˜¸ë„ê°€ ìµœê³ ì¸ ê³³ë“¤ ì¤‘ì—ì„œ 4ë°©í–¥ íƒìƒ‰í•˜ë©° maxBlank êµ¬í•˜ê¸°
 	int maxBlank = 0;
 	for (int i = 0; i < n; i++) for (int j = 0; j < n; j++) if (like[i][j].first == maxLike)maxBlank = max(maxBlank, like[i][j].second);
 	return maxBlank;
 }
-void likeInit() {
+void likeInit() { //like vector {0,0} ì´ˆê¸°í™”
 	for (int i = 0; i < n; i++)for (int j = 0; j < n; j++)like[i][j] = { 0, 0 };
 }
-void vvInit() {
+void vvInit() { //vë²¡í„° -> vvë²¡í„°ë¡œ ì¸ë±ìŠ¤ ë²ˆí˜¸ = í•™ìƒë²ˆí˜¸ê°€ ë§¤ì¹˜ë˜ë„ë¡ ì´ˆê¸°í™”
 	for (int i = 0; i < n * n; i++) 
 		for (int j = 0; j < 4; j++)
 			vv[v[i][0]].push_back(v[i][j + 1]);
 }
 int ansSum(int x, int y) {
 	int sum = 0;
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++) { //(x,y)ê¸°ì¤€ 4ë°©í–¥ ê²€ì‚¬
 		if (!isValid(x, y, i)) continue;
-		for (int j = 0; j < 4; j++) {
+		for (int j = 0; j < 4; j++) { //ë°©í–¥ì— ì„ í˜¸í•˜ëŠ” ì¹œêµ¬ê°€ ìˆëŠ”ì§€??
 			if (map[x + dx[i]][y + dy[i]] == vv[map[x][y]][j]) sum++;
 		}
 	}
@@ -91,14 +91,13 @@ int main() {
 	input();
 	map[1][1] = v[0][0];
 	while (cnt < n*n) {
-		p maxi; //cnt¹øÂ°·Î ÀÔ·ÂµÈ ÇĞ»ı±âÁØ ÀÚ¸®º° ¼±È£µµ, 4¹æÇâ °ø¹é ÃÖ´ë°ª <int,int> 
-		maxi.first = searchMaxLike(); //ÀÚ¸®º° ¼±È£µµ ÃÖ´ë°ª ±¸ÇÏ±â
-		maxi.second = searchMaxBlank(maxi.first);//ÀÚ¸®º°·Î ¼±È£µµ°¡ maxÀÎ °÷µé Áß 4¹æÇâ ºóÄ­ ÃÖ´ë ¼ö
-		insertStudent(maxi.first, maxi.second);// n*n map¿¡¼­ ÁÂÃø »ó´ÜºÎÅÍ ¿ìÃø ÇÏ´Ü±îÁö Å½»öÇÏ¸ç ¼±È£µµ, ÁÖº¯ ºóÄ­ ÃÖ´ë°ªÀÎ °÷¿¡ »ğÀÔ
-		likeInit(); //¼±È£µµ Á¶»çÇÑ ¹è¿­ 0À¸·Î ÃÊ±âÈ­
+		p maxi; //cntë²ˆì§¸ë¡œ ì…ë ¥ëœ í•™ìƒê¸°ì¤€ ìë¦¬ë³„ ì„ í˜¸ë„, 4ë°©í–¥ ê³µë°± ìµœëŒ€ê°’ <int,int> 
+		maxi.first = searchMaxLike(); //ìë¦¬ë³„ ì„ í˜¸ë„ ìµœëŒ€ê°’ êµ¬í•˜ê¸°
+		maxi.second = searchMaxBlank(maxi.first);//ìë¦¬ë³„ë¡œ ì„ í˜¸ë„ê°€ maxì¸ ê³³ë“¤ ì¤‘ 4ë°©í–¥ ë¹ˆì¹¸ ìµœëŒ€ ìˆ˜
+		insertStudent(maxi.first, maxi.second);// n*n mapì—ì„œ ì¢Œì¸¡ ìƒë‹¨ë¶€í„° ìš°ì¸¡ í•˜ë‹¨ê¹Œì§€ íƒìƒ‰í•˜ë©° ì„ í˜¸ë„, ì£¼ë³€ ë¹ˆì¹¸ ìµœëŒ€ê°’ì¸ ê³³ì— ì‚½ì…
+		likeInit(); //ì„ í˜¸ë„ ì¡°ì‚¬í•œ ë°°ì—´ 0ìœ¼ë¡œ ì´ˆê¸°í™”
 		cnt++;
 	}
-	//¿©±â±îÁø Æ²·È½À´Ï´Ù! 
 	vv.resize(v.size() + 1);
 	vvInit();
 	for (int i = 0; i < n; i++)for (int j = 0; j < n; j++)ans += ansSum(i, j);
