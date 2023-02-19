@@ -1,53 +1,59 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Stack;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 class Main {
 	
-	private static int N, result;
-	private static List<Integer> dp;
-	private static List<Integer> list;
+	private static int N;
+	private static int[] powers;	
+	private static List<Integer>[] dpArray;
+	private static Map<Integer, Integer> idxMap;
 
 	public static void main(String[] args) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		
 		N = Integer.parseInt(br.readLine());
-		list = new ArrayList<>();
-		dp = new ArrayList<>();
-		list.add(Integer.MAX_VALUE);
-		dp.add(0);
+		powers = new int[N + 1];
+		dpArray = new List[N + 1];
+		idxMap = new HashMap<>();
+		for (int i = 0; i <= N; i++) {
+			dpArray[i] = new ArrayList<>();
+			dpArray[i].add(0);
+		}
 		
 		StringTokenizer st = new StringTokenizer(br.readLine());
 		for (int i = 1; i <= N; i++) {
-			int curPower = Integer.parseInt(st.nextToken());
-			int lastIndex = list.size()-1;
+			powers[i] = Integer.parseInt(st.nextToken());
+		}
+		// idxMap 초기화
+		int[] orders = powers.clone();
+		Arrays.sort(orders);
+		for (int i = 0; i < N; i++) {
+			idxMap.put(orders[N-i], i+1);	// idx 내림차순으로 설정
+		}
+		
+		// dpArray 계산
+		for (int i = 1; i <= N; i++) {
+			int idx = idxMap.get(powers[i]);
 			
-			// 현재 원소가 마지막 원소보다 작을 경우 비교하기 않고 리스트에 삽입
-			if (list.get(lastIndex) > curPower) {
-				list.add(curPower);
-				dp.add(dp.get(lastIndex) + 1);	// 현재 까지 개수 저장
-				continue;
-			}
-			
-			int nowCnt = dp.get(lastIndex);	// 이전 요소 까지의 개수
-			// 사용하는 경우와 사용하지 않는 경우 길이 비교
-			while (list.get(lastIndex) < curPower) lastIndex--;	// curPower보다 큰 값으로 index 이동
-			if (dp.get(lastIndex) + 1 >= nowCnt) {
-				int idx = list.size() - 1;
-				do {
-					list.remove(idx);	// lastIndex 이후 요소 삭제
-					dp.remove(idx);
-					result++;
-				} while (--idx > lastIndex);
+			// 1 ~ idx 전까지 값 설정
+			for (int j = 1; j <= N; j++) {
+				List<Integer> prevList = dpArray[j-1];
+				List<Integer> currentList = dpArray[j];
 				
-				list.add(curPower);
-				dp.add(dp.get(idx)+1);
+				currentList.add( Math.max(
+						// 한단계 위 리스트에서 값을 가져옴
+						// idx가 현재 병사 전투력일 경우에 1을 증가
+						prevList.get(prevList.size()-1) + (j == idx ? 1 : 0),	
+						currentList.get(currentList.size()-1)) );
 			}
 		}
 		
-		System.out.println(result);
+		System.out.println(N - dpArray[N].get(dpArray[N].size()-1));
 	}
 }
 
@@ -67,4 +73,10 @@ class Main {
 	아이디어
 		탑 문제와 비슷한 방식
 		dp와 리스트 사용
+		(실패) => 1차원 dp를 2차원 dp 리스트로 바꾸기
+		
+		
+		
+		// (총 사이즈 - 내림차순 조합 중 최대 길이) = 삭제 수.   시간복잡도 O(2^N) 탈락
+		
 **/
