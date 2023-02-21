@@ -2,6 +2,7 @@ import java.io.*;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.stream.IntStream;
 
 class Main {
 	
@@ -17,6 +18,7 @@ class Main {
 	private static int[] perm;		// 더러운 칸 순열 저장
 	private static int startCoord;
 	private static char[][] map;
+	private static int[][] distance;
 	private static int result;		// 최소 이동 거리
 	private static boolean[][] visited;
 	private static int MAX_STEP; 
@@ -49,26 +51,35 @@ class Main {
 				}
 			}
 		}
-		perm = Arrays.copyOf(dirties, n);
+		distance = new int[n+1][n+1];
+		perm = IntStream.range(1, n+1).toArray();
 		return true;
 	}
 	
 	public static void main(String[] args) throws Exception {
 		
-		while(init()) {
+		while (init()) {
 			if (n == 0) {
+				// 더러운 방이 없음
 				sb.append(0).append("\n");
 				continue;
 			}
 			else if (n == 1) {
+				// 더러운 방이 1개
 				sb.append(bfs(startCoord, dirties[0])).append("\n");
 				continue;
 			}
 			
-			int[] orders = new int[n+1];	// 순회 순서 저장
-			orders[0] = startCoord;
+			// 더러운 방이 2개 이상
+			// 노드에서 노드 거리 계산 (bfs)
+			if (!calcDistance()) {
+				// 도달 불가능할 때
+				sb.append(-1).append("\n");
+				continue;
+			};
 			
-			GET_MINIMUM:
+			// 순서에 따른 최소값 계산
+			int[] orders = new int[n+1];	// 순회 순서 저장
 			do {
 				// 새로운 순열
 				for (int i = 1; i <= n; i++) {
@@ -76,30 +87,46 @@ class Main {
 				}
 				// 순서에 따른 길이 검사
 				// 이전 최소값을 넘어가면 더이상 검사하지않음
-				
-				int distance = 0;	// 이동거리
+				int sumDistance = 0;	// 이동거리
 				for (int i = 0; i < n; i++) {
-					int res = bfs(orders[i], orders[i+1]);
-					if (res == -1) {
-						result = -1;
-						break GET_MINIMUM;
-					}
+					sumDistance += distance[orders[i]][orders[i+1]];
 					
-					distance += res;
-					
-					if (result < distance) break;
+					if (result < sumDistance) break;
 				}
 				
-				result = Math.min(result, distance);
+				result = Math.min(result, sumDistance);
 				
 			} while (nextPermutation());
 			
+			// 구한 최솟값 출력
 			sb.append(result).append("\n");
 		}
 		
 		System.out.print(sb);
 	}
 	
+	// 도달 불가능한 경우 -1 반환
+	private static boolean calcDistance() {
+		int start = startCoord;
+		int startIdx = 0;
+		for (int i = 0; i < n; i++) {
+			for (int j = i; j < n; j++) {
+				int dest = dirties[j];
+				int destIdx = j+1;
+				int d = bfs(start, dest);
+				
+				if (d == -1) return false;	// 도달 불가능 할 경우 -1 반환
+				
+				distance[startIdx][destIdx] = d;
+				distance[destIdx][startIdx] = d;
+			}
+			
+			start = dirties[i];
+			startIdx = i+1;
+		}
+		return true;
+	}
+
 	private static void visitedClear() {
 		for (int i = 0; i < row; i++) {
 			for (int j = 0; j < col; j++) {
@@ -143,7 +170,7 @@ class Main {
 	 * 
 	 * @param src  시작 좌표.
 	 * @param dest 목표 좌표.
-	 * @return start에서 end까지 최소 거리
+	 * @return start에서 end까지 최소 거리. (도달 불가 -1 반환)
 	 */
 	private static int bfs(int src, int dest) {
 		Queue<Integer> queue = new LinkedList<>();
@@ -170,7 +197,7 @@ class Main {
 					if (nextCoord == dest) return step+1;
 					
 					if (isValidRC(nr, nc) && !visited[nr][nc]
-							&& map[nr][nc] == '.') {
+							&& map[nr][nc] != 'x') {
 						queue.offer(codeCoord(nr, nc));
 						visited[nr][nc] = true;
 					}
