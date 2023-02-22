@@ -12,8 +12,7 @@ class Main {
 	private static int R, C, N;
 	
 	private static char[][] map;
-//	private static List<Integer> bombs;
-	private static boolean[][] visited;
+	private static Queue<Integer> bombs;
 	
 	private static int[] dx = { -1,  0,  1,  0};
 	private static int[] dy = {  0,  1,  0, -1};
@@ -24,71 +23,59 @@ class Main {
 		R = Integer.parseInt(input[0]);
 		C = Integer.parseInt(input[1]);
 		N = Integer.parseInt(input[2]);
+		
+		if (N > 2) N = (N-3) % 4 + 3;
+		
 		map = new char[R][C];
-//		bombs = new ArrayList<>();
-		visited = new boolean[R][C];
+		bombs = new LinkedList<>();
 		
 		for (int i = 0; i < R; i++) {
 			map[i] = br.readLine().toCharArray();
-			for (int j = 0; j < C; j++) {
-				if (map[i][j] == 'O') map[i][j] = '1';
-				else map[i][j] = '/';	// '/' -> '0' -> '1' -> '2'
-			}
 		}
 	}
 	
 	public static void main(String[] args) throws Exception {
-		// 입력 초기화
+		
+		// 변수 초기화
 		init();
 		
-		reverse(1);
+		// N = 3, 5, 7, 9, 11, ...
+		// 3 == 7 == 4k + 3 : 처음 폭탄이 터진 장면
+		// 5 == 9 == 4k + 1 : 폭탄이 두 번째로 터진 장면
+		if (N % 4 == 3) boom();
+		else if (N % 2 == 0) changeBombAll();
+		else if (N != 1 && N % 4 == 1) {
+			boom(); 
+			boom();
+		}
 		
-		// 결과 출력
 		printMap();
 	}
 
-	private static void reverse(int time) {
-		visitedInit();
+	private static void boom() {
+		// 폭탄 위치 기억
+		for (int i = 0; i < R; i++) {
+			for (int j = 0; j < C; j++) {
+				if (map[i][j] == 'O') { 
+					bombs.offer(i);
+					bombs.offer(j);
+				}
+			}
+		}
 		
-		for (int i = 0; i < R; i++) {
-			for (int j = 0; j < C; j++) {
-				
-				if (visited[i][j]) continue;
-				
-				visited[i][j] = true;
-				
-				// map[i][j] == '2'
-				if (map[i][j] != '2') {
-					map[i][j]++;
-					continue;
-				}
+		// 모두 폭탄으로 바꿈
+		changeBombAll();
 
-				map[i][j] = '*';
-				for (int k = 0; k < 4; k++) {
-					int nx = i + dx[k];
-					int ny = j + dy[k];
-					
-					if (isValidXY(nx, ny) && map[nx][ny] != '2') {
-						map[nx][ny] = '*';
-						visited[nx][ny] = true;
-					}
-				}
-			}
-		}
-
-		for (int i = 0; i < R; i++) {
-			for (int j = 0; j < C; j++) {
-				if (map[i][j] == '*') map[i][j] = '/';
-			}
-		}
-
-		if (++time != N) reverse(time);
-	}
-
-	private static void visitedInit() {
-		for (int i = 0; i < R; i++) {
-			for (int j = 0; j < C; j++) {
-				visited[i][j] = false;
+		// 폭탄과 그 주변을 공백으로 바꿈 
+		while(!bombs.isEmpty()) {
+			int x = bombs.poll();
+			int y = bombs.poll();
+			map[x][y] = '.';
+			for (int i = 0; i < 4; i++) {
+				int nx = x+dx[i];
+				int ny = y+dy[i];
+				if (isValidXY(nx, ny))
+					map[nx][ny] = '.';
 			}
 		}
 	}
@@ -97,14 +84,19 @@ class Main {
 		return nx>=0&&nx<R&&ny>=0&&ny<C;
 	}
 	
+	private static void changeBombAll() {
+		for (int i = 0; i < R; i++) {
+			for (int j = 0; j < C; j++) {
+				map[i][j] = 'O';
+			}
+		}
+	}
+	
 	private static void printMap() {
 		StringBuilder sb = new StringBuilder(10);
 		for (int i = 0; i < R; i++) {
 			for (int j = 0; j < C; j++) {
-				if (map[i][j] == '/')
-					sb.append('.');
-				else
-					sb.append('O');
+					sb.append(map[i][j]);
 			}
 			sb.append("\n");
 		}
