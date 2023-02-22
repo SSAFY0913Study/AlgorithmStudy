@@ -41,10 +41,10 @@ int main() {
         cin >> m >> n;
         if (!n && !m) break;
         for (int i = 0; i < 22; i++)   //dist배열, check, map배열 초기화, 벡터 비우기
-            for (int j = 0; j < 22; j++) 
+            for (int j = 0; j < 22; j++)
                 for (int k = 0; k < 10; k++)
                     dist[i][j][k] = 1e5;
-                
+
         memset(check, 0, sizeof(check));
         memset(map, 0, sizeof(map));
         v.clear();
@@ -64,12 +64,12 @@ int main() {
             cout << 0 << "\n";
             continue;
         }
-        bfs(sx, sy, 0);
+        bfs(sx, sy, 0); //첫 청소기 위치에서 bfs
         sort(v.begin(), v.end());
-        for (int i = 0; i < s; i++) bfs(v[i].first.first, v[i].first.second, v[i].second); //쓰레기 좌표, 번호
+        for (int i = 0; i < s; i++) bfs(v[i].first.first, v[i].first.second, v[i].second); //쓰레기별로 bfs
         do {
             int temp = dist[v[0].first.first][v[0].first.second][0];
-            for (int i = 0; i < s - 1; i++) temp += dist[v[i + 1].first.first][v[i + 1].first.second][v[i].second];  //거리 더하기
+            for (int i = 0; i < s - 1; i++) temp += dist[v[i + 1].first.first][v[i + 1].first.second][v[i].second];  //순열 순서로 거리 더하기
             ans = min(ans, temp);
         } while (next_permutation(v.begin(), v.end())); //다음 순열
         if (ans == 1e5)cout << -1 << "\n";
