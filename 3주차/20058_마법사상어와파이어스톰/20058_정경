@@ -1,0 +1,167 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <math.h>
+#include <limits.h>
+using namespace std;
+
+//회전구현이 깔끔하지 못해서 시간이 오래걸림
+
+int map[66][66];
+int check[66][66];
+int N, Q, L, maxLoaf = 0;
+int dx[] = { -1, 0, 1, 0 };
+int dy[] = { 0, 1, 0, -1 };
+
+int BFS(int low, int col) {
+	queue<pair<int, int>> q;
+	q.push(make_pair(low, col));
+	check[low][col] = true;
+	int areaSize = 0;
+
+	while (!q.empty()) {
+		int curLow = q.front().first;
+		int curCol = q.front().second;
+		q.pop();
+		areaSize++;
+
+		for (int i = 0; i < 4; i++) {
+			int nx = curLow + dx[i];
+			int ny = curCol + dy[i];
+
+			if (map[nx][ny] > 0 && !check[nx][ny]) {
+				check[nx][ny] = true;
+				q.push(make_pair(nx, ny));
+			}
+		}
+	}
+	return areaSize;
+}
+
+void calLoaf() {
+	for (int i = 1; i <= pow(2, N); i++) {
+		for (int j = 1; j <= pow(2, N); j++) {
+			if (!check[i][j] && map[i][j] > 0) {
+				maxLoaf = max(maxLoaf, BFS(i, j));
+
+			}
+		}
+	}
+}
+
+int sumIce() {
+	int sum = 0;
+	for (int i = 1; i <= pow(2, N); i++) {
+		for (int j = 1; j <= pow(2, N); j++) {
+			sum += map[i][j];
+		}
+	}
+	return sum;
+}
+
+void seekMap() {
+	vector<pair<int, int>> posArr;	// 얼음이 3개이상 인접해있지 않은 칸의 좌표배열
+	for (int i = 1; i <= pow(2, N); i++) {
+		for (int j = 1; j <= pow(2, N); j++) {
+			if (map[i][j] == 0) continue;
+			int nearZero = 0;
+			for (int k = 0; k < 4; k++) {
+				int nx = i + dx[k];
+				int ny = j + dy[k];
+				if (map[nx][ny] == 0) nearZero++;
+			}
+			if (nearZero > 1) posArr.push_back(make_pair(i, j));
+		}
+	}
+
+	for (int i = 0; i < posArr.size(); i++) {
+		int low = posArr[i].first;
+		int col = posArr[i].second;
+
+		map[low][col]--;
+	}
+}
+
+void turnMap(int low, int col, int n) {//배열 회전시키는 함수
+	if (n == 0) return;
+
+	int cnt = pow(2, n - 1);
+
+	while (cnt != 0) {
+		int maxLow = low + cnt * 2 - 1;
+		int maxCol = col + cnt * 2 - 1;
+
+		vector<int> arr1, arr2, arr3, arr4;
+
+		for (int i = col; i <= maxCol; i++) arr1.push_back(map[low][i]);	//위테두리 배열에 저장
+		for (int i = low; i <= maxLow; i++) arr2.push_back(map[i][maxCol]);	//왼쪽테두리 배열에 저장
+		for (int i = col; i <= maxCol; i++) arr3.push_back(map[maxLow][i]);	// 아래쪽 테두리 배열에 저장
+		for (int i = low; i <= maxLow; i++) arr4.push_back(map[i][col]);	// 오른쪽 테두리 배열에 저장
+
+		int idx = cnt * 2 - 1;
+		for (int i = col; i <= maxCol; i++) {
+			map[low][i] = arr4[idx--];
+		}
+
+		idx = 0;
+		for (int i = low; i <= maxLow; i++) {
+			map[i][maxCol] = arr1[idx++];
+		}
+
+		idx = cnt * 2 - 1;
+		for (int i = col; i <= maxCol; i++) {
+			map[maxLow][i] = arr2[idx--];
+		}
+
+		idx = 0;
+		for (int i = low; i <= maxLow; i++) {
+			map[i][col] = arr3[idx++];
+		}
+
+		low += 1, col += 1;
+		cnt--;
+	}
+}
+
+
+void splitArea(int low, int col, int n) {//구역쪼개기
+	if (n == L) {//L은 단계
+		turnMap(low, col, n);
+		return;
+	}
+	splitArea(low, col, n - 1);
+	splitArea(low, col + pow(2, n - 1), n - 1);
+	splitArea(low + pow(2, n - 1), col, n - 1);
+	splitArea(low + pow(2, n - 1), col + pow(2, n - 1), n - 1);
+}
+
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+
+	cin >> N >> Q;
+
+	for (int i = 1; i <= pow(2, N); i++) {
+		for (int j = 1; j <= pow(2, N); j++) {
+			cin >> map[i][j];
+		}
+	}
+
+	for (int i = 0; i < Q; i++) {
+		cin >> L;
+		splitArea(1, 1, N);	//map전체크기는 N단계의 마법과 같음
+		seekMap();
+	}
+
+	int sum = sumIce();
+	cout << sum << '\n';
+
+	if (sum == 0) cout << 0;
+	else {
+		calLoaf();
+		cout << maxLoaf;
+	}
+	return 0;
+}
