@@ -1,0 +1,225 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <limits.h>
+using namespace std;
+
+int N, M, cnt0 = 0, resultMonitor = 0;
+int map[8][8];
+int changeMap[8][8];
+
+class CCTV {
+public:
+	int kind; //감시 카메라의 종류
+	int low;
+	int col;
+	int dir = 0; //감시카메라의 방향
+
+	CCTV(int kind, int low, int col)
+		:kind(kind), low(low), col(col) {}
+};
+
+vector<CCTV> cctvArr;
+
+void copyMap() {
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			changeMap[i][j] = map[i][j];
+		}
+	}
+}
+int seekUp(int low, int col) {//위쪽 방향 탐색하며 감시구역 개수 체크
+	int monitorArea = 0;
+	while (low >= 0 && changeMap[low][col] != 6) {
+		if (changeMap[low][col] == 0) {
+			monitorArea++;
+			changeMap[low][col] = -1;
+		}
+		low--;
+	}
+	return monitorArea;
+}
+
+int seekRight(int low, int col) {//오른쪽 방향 탐색하며 감시구역 개수 체크
+	int monitorArea = 0;
+	while (col < M && changeMap[low][col] != 6) {
+		if (changeMap[low][col] == 0) {
+			monitorArea++;
+			changeMap[low][col] = -1;
+		}
+		col++;
+	}
+	return monitorArea;
+}
+
+int seekDown(int low, int col) {//아래쪽 방향 탐색하며 감시구역 개수 체크
+	int monitorArea = 0;
+	while (low < N && changeMap[low][col] != 6) {
+		if (changeMap[low][col] == 0) {
+			monitorArea++;
+			changeMap[low][col] = -1;
+		}
+		low++;
+	}
+	return monitorArea;
+}
+
+int seekLeft(int low, int col) {//왼쪽 방향 탐색하며 감시구역 개수 체크
+	int monitorArea = 0;
+	while (col >= 0 && changeMap[low][col] != 6) {
+		if (changeMap[low][col] == 0) {
+			monitorArea++;
+			changeMap[low][col] = -1;
+		}
+		col--;
+	}
+	return monitorArea;
+}
+
+void simul() {
+	copyMap();	// changeMap원복
+
+	int monitorArea = 0;	// 감시하는 범위 수
+	for (int i = 0; i < cctvArr.size(); i++) {
+		CCTV curCCTV = cctvArr[i];
+		int kind = curCCTV.kind;
+		int low = curCCTV.low;
+		int col = curCCTV.col;
+		int dir = curCCTV.dir;
+
+		if (kind == 1) {//1번 종류 카메라
+			if (dir == 0) {	// 위쪽탐색
+				monitorArea += seekUp(low, col);
+			}
+			else if (dir == 1) {//오른쪽 탐색
+				monitorArea += seekRight(low, col);
+			}
+			else if (dir == 2) {//아래 탐색
+				monitorArea += seekDown(low, col);
+			}
+			else {// 왼쪽 탐색
+				monitorArea += seekLeft(low, col);
+			}
+		}
+		else if (kind == 2) {//2번 종류 카메라
+			if (dir == 0) {	//왼쪽 오른쪽 탐색
+				monitorArea += seekLeft(low, col);
+				monitorArea += seekRight(low, col);
+			}
+			else {// 위아래 탐색
+				monitorArea += seekUp(low, col);
+				monitorArea += seekDown(low, col);
+			}
+		}
+		else if (kind == 3) {//3번 종류 카메라
+			if (dir == 0) {// 위, 오른쪽 탐색
+				monitorArea += seekUp(low, col);
+				monitorArea += seekRight(low, col);
+			}
+			else if (dir == 1) {// 오른쪽, 아래쪽 탐색
+				monitorArea += seekRight(low, col);
+				monitorArea += seekDown(low, col);
+			}
+			else if (dir == 2) {// 아래쪽, 왼쪽 탐색
+				monitorArea += seekDown(low, col);
+				monitorArea += seekLeft(low, col);
+			}
+			else {//왼쪽, 위쪽 탐색
+				monitorArea += seekLeft(low, col);
+				monitorArea += seekUp(low, col);
+			}
+		}
+		else if (kind == 4) {//4번 종류 카메라
+			if (dir == 0) {// 위, 오른쪽, 왼쪽 탐색
+				monitorArea += seekUp(low, col);
+				monitorArea += seekRight(low, col);
+				monitorArea += seekLeft(low, col);
+			}
+			else if (dir == 1) {// 위, 오른쪽, 아래쪽 탐색
+				monitorArea += seekUp(low, col);
+				monitorArea += seekRight(low, col);
+				monitorArea += seekDown(low, col);
+			}
+			else if (dir == 2) {// 아래, 오른쪽, 왼쪽 탐색
+				monitorArea += seekDown(low, col);
+				monitorArea += seekRight(low, col);
+				monitorArea += seekLeft(low, col);
+			}
+			else {// 위, 왼쪽, 아래쪽 탐색
+				monitorArea += seekUp(low, col);
+				monitorArea += seekLeft(low, col);
+				monitorArea += seekDown(low, col);
+			}
+		}
+		else {// 5번 종류 카메라
+			monitorArea += seekUp(low, col);
+			monitorArea += seekRight(low, col);
+			monitorArea += seekDown(low, col);
+			monitorArea += seekLeft(low, col);
+		}
+	}
+
+	resultMonitor = max(resultMonitor, monitorArea);	//결과값 갱신
+}
+
+
+/*/
+감시카메라의 방향을 설정하는 모든 경우의 수를 탐색한다.
+*/
+void setCCTVdir(int cnt) {
+	if (cnt == cctvArr.size()) {
+		simul();
+		return;
+	}
+
+	CCTV curCCTV = cctvArr[cnt];// CCTV배열에서 현재 cnt의 카메라의 방향을 설정
+	if (curCCTV.kind == 1) {//1번 카메라는 4가지 경우의 방향 탐색이 가능
+		for (int i = 0; i < 4; i++) {
+			cctvArr[cnt].dir = i;
+			setCCTVdir(cnt + 1);
+		}
+	}
+	else if (curCCTV.kind == 2) {// 2번 카메라는 2가지 경우의 방향 탐색이 가능
+		for (int i = 0; i < 2; i++) {
+			cctvArr[cnt].dir = i;
+			setCCTVdir(cnt + 1);
+		}
+	}
+	else if (curCCTV.kind == 3) {// 3번 카메라는 4가지 경우의 방향 탐색이 가능
+		for (int i = 0; i < 4; i++) {
+			cctvArr[cnt].dir = i;
+			setCCTVdir(cnt + 1);
+		}
+	}
+	else if (curCCTV.kind == 4) {// 4번 카메라는 4가지 경우의 방향 탐색이 가능
+		for (int i = 0; i < 4; i++) {
+			cctvArr[cnt].dir = i;
+			setCCTVdir(cnt + 1);
+		}
+	}
+	else {// 5번카메라는 1가지 경우의 방향탐색이 가능
+		setCCTVdir(cnt + 1);
+	}
+}
+
+
+int main() {
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+
+	cin >> N >> M;
+
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < M; j++) {
+			cin >> map[i][j];
+			if (map[i][j] >= 1 && map[i][j] <= 5) cctvArr.push_back(CCTV(map[i][j], i, j));
+			else if (map[i][j] == 0) cnt0++;
+		}
+	}
+	setCCTVdir(0);
+
+	cout << cnt0 - resultMonitor;
+
+	return 0;
+}
